@@ -9,6 +9,7 @@ local function get_watched_file()
   return path
 end
 
+
 M.print_table = function(t)
   local val = vim.inspect(t)
   print(val)
@@ -40,12 +41,30 @@ M.is_file_markdown = function(path)
   return ext == 'md'
 end
 
+
+M.get_watched_files = function()
+  return vim.fn.readfile(get_watched_file())
+end
+
+M.watched_files = M.get_watched_files()
+
+M.purge_watched_files = function()
+  vim.fn.writefile({}, get_watched_file())
+  M.watched_files = {}
+end
+
+M.print_watched_files = function()
+  local watched = vim.fn.readfile(get_watched_file())
+  M.print_table(watched)
+end
+
 M.add_file_to_watched = function(path)
   local watched = vim.fn.readfile(get_watched_file())
   if vim.fn.index(watched, path) == -1 then
     table.insert(watched, path)
     vim.fn.writefile(watched, get_watched_file())
   end
+  M.watched_files = watched
 end
 
 M.remove_file_from_watched = function(path)
@@ -56,19 +75,19 @@ M.remove_file_from_watched = function(path)
     M.print_table(watched)
     vim.fn.writefile(watched, get_watched_file())
   end
+  M.watched_files = watched
 end
 
-M.get_watched_files = function()
-  return vim.fn.readfile(get_watched_file())
-end
+M.is_file_in_watched = function(path)
+  local watched
 
-M.print_watched_files = function()
-  local watched = vim.fn.readfile(get_watched_file())
-  M.print_table(watched)
-end
+  if M.watched_files == nil or #M.watched_files == 0 then
+    watched = M.get_watched_files()
+  else
+    watched = M.watched_files
+  end
 
-M.purge_watched_files = function()
-  vim.fn.writefile({}, get_watched_file())
+  return vim.fn.index(watched, path) ~= -1
 end
 
 return M
