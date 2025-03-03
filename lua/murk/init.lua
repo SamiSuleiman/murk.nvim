@@ -33,24 +33,30 @@ local function create_cmds()
   end, {})
 end
 
-local function create_autocmds()
+local function create_autocmds(style)
   vim.api.nvim_create_autocmd('BufWritePost', {
     pattern = { '*.md' },
     callback = function()
       local bufPath = get_curr_file_path()
       if utils.is_file_in_watched(bufPath) then
-        print('writing to css')
+        local res = utils.convert_to_html(bufPath, style)
+        if res.isAlreadyConverted == false then
+          vim.fn.system('open ' .. res.path)
+        end
       end
     end,
   })
 end
 
 M.setup = function(opts)
-  utils.ensure_dirs()
   local style = opts.css or utils.get_plugin_root() .. '/assets/style.css'
+  local cleanWatched = opts.cleanWatched or false
+
+  utils.init_cleanup(cleanWatched)
+  utils.ensure_dirs()
 
   create_cmds()
-  create_autocmds()
+  create_autocmds(style)
 end
 
 return M

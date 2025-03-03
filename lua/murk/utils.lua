@@ -9,6 +9,9 @@ local function get_watched_file()
   return path
 end
 
+local function path_to_file_name(path)
+  return path:gsub('[\\/]', '__'):gsub('[^%w%.%-]', '_') .. '.html'
+end
 
 M.print_table = function(t)
   local val = vim.inspect(t)
@@ -18,6 +21,7 @@ end
 M.ensure_dirs = function()
   local dirs = {
     data = vim.fn.stdpath 'data' .. '/murk',
+    html = vim.fn.stdpath 'data' .. '/murk/html',
   }
 
   for _, dir in pairs(dirs) do
@@ -40,7 +44,6 @@ M.is_file_markdown = function(path)
   local ext = vim.fn.fnamemodify(path, ':e')
   return ext == 'md'
 end
-
 
 M.get_watched_files = function()
   return vim.fn.readfile(get_watched_file())
@@ -88,6 +91,34 @@ M.is_file_in_watched = function(path)
   end
 
   return vim.fn.index(watched, path) ~= -1
+end
+
+M.convert_to_html = function(path, stylePath)
+  local isAlreadyConverted = false
+  local dataPath = vim.fn.stdpath 'data' .. '/murk' .. '/html'
+  local newFileName = path_to_file_name(path)
+  local newPath = dataPath .. '/' .. newFileName
+
+  if vim.fn.filereadable(newPath) == 1 then
+    isAlreadyConverted = true
+  end
+
+  print(newPath)
+
+  local cmd = 'pandoc -s -c ' .. stylePath .. ' ' .. path .. ' -o ' .. newPath
+  vim.fn.system(cmd)
+  return {
+    path = newPath,
+    isAlreadyConverted = isAlreadyConverted,
+  }
+end
+
+M.init_cleanup = function(cleanWatched)
+  local dataPath = vim.fn.stdpath 'data' .. '/murk' .. '/html'
+  vim.fn.delete(dataPath, 'rf')
+  if cleanWatched then
+    M.purge_watched_files()
+  end
 end
 
 return M
