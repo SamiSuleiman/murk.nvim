@@ -103,14 +103,20 @@ M.convert_to_html = function(path, stylePath)
     isAlreadyConverted = true
   end
 
-  print(newPath)
-
   local cmd = 'pandoc -s -c ' .. stylePath .. ' ' .. path .. ' -o ' .. newPath
   vim.fn.system(cmd)
   return {
     path = newPath,
     isAlreadyConverted = isAlreadyConverted,
   }
+end
+
+M.open_html = function(path)
+  local cmd = 'open '
+    .. vim.fn.stdpath 'data'
+    .. '/murk/html/'
+    .. path_to_file_name(path)
+  vim.fn.system(cmd)
 end
 
 M.init_cleanup = function(cleanWatched)

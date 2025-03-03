@@ -10,6 +10,13 @@ local function get_curr_file_path()
 end
 
 local function create_cmds()
+  vim.api.nvim_create_user_command('MurkOpen', function()
+    local bufPath = get_curr_file_path()
+    if utils.is_file_in_watched(bufPath) then
+      utils.open_html(bufPath)
+    end
+  end, {})
+
   vim.api.nvim_create_user_command('MurkStart', function()
     local bufPath = get_curr_file_path()
     if utils.is_file_markdown(bufPath) then
