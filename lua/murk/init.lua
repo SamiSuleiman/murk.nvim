@@ -9,11 +9,12 @@ local function get_curr_file_path()
   return normalizedPath
 end
 
-local function create_cmds()
+local function create_cmds(style)
   vim.api.nvim_create_user_command('MurkOpen', function()
     local bufPath = get_curr_file_path()
     if utils.is_file_in_watched(bufPath) then
-      utils.open_html(bufPath)
+      local res = utils.convert_to_html(bufPath, style)
+      vim.fn.system('open ' .. res.path)
     end
   end, {})
 
@@ -62,7 +63,7 @@ M.setup = function(opts)
   utils.init_cleanup(cleanWatched)
   utils.ensure_dirs()
 
-  create_cmds()
+  create_cmds(style)
   create_autocmds(style)
 end
 
